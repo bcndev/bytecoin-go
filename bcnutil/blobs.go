@@ -60,6 +60,19 @@ func BlockLongHashingData(tmpl bytecoin.BinBlockTemplate) (data []byte, err erro
 	return b.Bytes(), nil
 }
 
+func MMBlockLongHashingData(root bytecoin.BinRootBlock) (data []byte, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("failed to calc MM block long hashing data: %v", r)
+		}
+	}()
+
+	var b bytes.Buffer
+	serRootBlock(&root, rw{nil, &b}, kindLongBlockHash)
+
+	return b.Bytes(), nil
+}
+
 func MarshalMMBlockTemplate(tmpl bytecoin.BinBlockTemplate) (data []byte, err error) {
 	defer func() {
 		if r := recover(); r != nil {
