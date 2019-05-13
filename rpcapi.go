@@ -528,7 +528,7 @@ type (
 	GetCurrencyIDReq struct{}
 
 	GetCurrencyIDResp struct {
-		CurrencyIDBlob HexBlob `json:"currency_id_blob"`
+		CurrencyIDBlob Hash `json:"currency_id_blob"`
 	}
 
 	SubmitBlockReq struct {
