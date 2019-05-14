@@ -20,13 +20,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestVerifyBCNAddress(t *testing.T) {
-	addrs := []string{
-		"22bEHEYaiQAT2cRV9z7xdyRd4PQdaw9oDSukB6mx675hQq4G5J5SceLCpVnMxN6yH1E7auveLRWwjA5Bv7HCNnGGCLFrouY",
-		"bcnZEpbqJiChozdP5hQAFnBkeAvjdfUBhPw1vhE96CfQZaKKYfKSbdTKM7EN431ff95wRnBjeZbrpPo6aBBgRdYd2NkrEzEefr",
+func TestVerifyAddress(t *testing.T) {
+	addrs := map[uint64]string{
+		6:      "22bEHEYaiQAT2cRV9z7xdyRd4PQdaw9oDSukB6mx675hQq4G5J5SceLCpVnMxN6yH1E7auveLRWwjA5Bv7HCNnGGCLFrouY",
+		572238: "bcnZEpbqJiChozdP5hQAFnBkeAvjdfUBhPw1vhE96CfQZaKKYfKSbdTKM7EN431ff95wRnBjeZbrpPo6aBBgRdYd2NkrEzEefr",
+		18018:  "etnjxNhP2BVSuxzVyiLdNoU5yG3FoF8AmW4xAkcZfM2hfR5G7Q8B1oz5JrwV6FjQhx7s1dTctXQ3yhiAiEg1EJSJ4b6bXwJFVn",
 	}
 
-	for _, addr := range addrs {
-		assert.NoError(t, VerifyAddress(addr))
+	for tag, addr := range addrs {
+		assert.NoError(t, VerifyAddress(addr, tag))
 	}
 }

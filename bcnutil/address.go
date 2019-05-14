@@ -23,13 +23,14 @@ import (
 )
 
 const (
-	addrLegacyTag = 6
-	addrTag       = 572238
-
 	addrChecksumSize = 4
 )
 
-func VerifyAddress(addr string) error {
+var (
+	bcnTags = []uint64{6, 572238}
+)
+
+func VerifyAddress(addr string, tags ...uint64) error {
 	data, err := base58p.DecodeString(addr)
 	if err != nil {
 		return err
@@ -40,7 +41,17 @@ func VerifyAddress(addr string) error {
 		return fmt.Errorf("failed to decode address tag")
 	}
 
-	if tag != addrLegacyTag && tag != addrTag {
+	if len(tags) == 0 {
+		tags = bcnTags
+	}
+	tagFound := false
+	for _, t := range tags {
+		if t == tag {
+			tagFound = true
+			break
+		}
+	}
+	if !tagFound {
 		return fmt.Errorf("invalid address tag %v", tag)
 	}
 
