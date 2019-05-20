@@ -22,10 +22,10 @@ import (
 )
 
 const (
-	kindNormal        = 0
-	kindPreHash       = 1
-	kindBlockHash     = 2
-	kindLongBlockHash = 3
+	kindNormal       = 0
+	kindPreHash      = 1
+	kindBlockHash    = 2
+	kindPoWBlockHash = 3
 
 	typeTagOutputKey     = 2
 	typeTagInputKey      = 2
@@ -255,8 +255,8 @@ func serRootBlock(v *bytecoin.BinRootBlock, rw rw, kind int) {
 		v.Nonce = make([]byte, 4)
 	}
 	rw.Binary(v.Nonce, 4)
-	if kind == kindBlockHash || kind == kindLongBlockHash {
-		minerTxHash := getRootBlockBaseTransactionHash(v.CoinbaseTransaction)
+	if kind == kindBlockHash || kind == kindPoWBlockHash {
+		minerTxHash := getETNCoinbaseTransactionHash(v.CoinbaseTransaction)
 		merkleRoot := TreeHashFromBranch(v.CoinbaseTransactionBranch, len(v.CoinbaseTransactionBranch), minerTxHash, bytecoin.Hash{})
 		rw.Binary(merkleRoot[:], 32)
 	}
@@ -264,7 +264,7 @@ func serRootBlock(v *bytecoin.BinRootBlock, rw rw, kind int) {
 	if v.TransactionCount < 1 {
 		panic("Wrong transactions number")
 	}
-	if kind == kindLongBlockHash {
+	if kind == kindPoWBlockHash {
 		return
 	}
 	branchSize := CoinbaseTreeDepth(v.TransactionCount)
@@ -301,11 +301,11 @@ func serBlockBodyProxy(v *BinBlockBodyProxy, rw rw) {
 	rw.Varint(&v.TransactionCount)
 }
 
-func serBlockTemplateHeader(v *bytecoin.BinBlockTemplate, rw rw, kind int, proxy BinBlockBodyProxy) {
+func serBlockTemplateHeader(v *bytecoin.BinBlockTemplate, rw rw, format Format, kind int, proxy BinBlockBodyProxy) {
 	if kind == kindNormal {
 		rw.Varint(&v.MajorVersion)
 		rw.Varint(&v.MinorVersion)
-		if v.MajorVersion == 1 {
+		if v.MajorVersion == 1 || (format == FormatElectroneum && v.MajorVersion == 7) {
 			rw.VarintUint32(&v.Timestamp)
 			rw.Binary(v.PreviousBlockHash[:], 32)
 			if v.Nonce == nil {
@@ -322,7 +322,7 @@ func serBlockTemplateHeader(v *bytecoin.BinBlockTemplate, rw rw, kind int, proxy
 		// TODO - CM here
 		panic("Unknown block major version")
 	}
-	if v.MajorVersion == 1 {
+	if v.MajorVersion == 1 || (format == FormatElectroneum && v.MajorVersion == 7) {
 		rw.Varint(&v.MajorVersion)
 		rw.Varint(&v.MinorVersion)
 		rw.VarintUint32(&v.Timestamp)
@@ -335,7 +335,7 @@ func serBlockTemplateHeader(v *bytecoin.BinBlockTemplate, rw rw, kind int, proxy
 		return
 	}
 	if v.MajorVersion >= 2 && v.MajorVersion <= 4 { // MM
-		if kind == kindLongBlockHash {
+		if kind == kindPoWBlockHash {
 			serRootBlock(&v.RootBlock, rw, kind)
 			return
 		}
@@ -352,8 +352,8 @@ func serBlockTemplateHeader(v *bytecoin.BinBlockTemplate, rw rw, kind int, proxy
 	panic("Unknown block major version")
 }
 
-func serBlockTemplate(v *bytecoin.BinBlockTemplate, rw rw, kind int, proxy BinBlockBodyProxy) {
-	serBlockTemplateHeader(v, rw, kind, proxy)
+func serBlockTemplate(v *bytecoin.BinBlockTemplate, rw rw, format Format, kind int, proxy BinBlockBodyProxy) {
+	serBlockTemplateHeader(v, rw, format, kind, proxy)
 	serTransactionPrefix(&v.CoinbaseTransaction.BinTransactionPrefix, rw)
 	if rw.r != nil {
 		count := 0
