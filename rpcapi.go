@@ -543,7 +543,7 @@ type (
 		Depth        int         `json:"depth"`
 	}
 
-	SubmitBlockLegacyReq struct{}
+	SubmitBlockLegacyReq []HexBlob
 
 	SubmitBlockLegacyResp struct {
 		Status string `json:"status"`
