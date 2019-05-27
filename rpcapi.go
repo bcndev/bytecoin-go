@@ -538,7 +538,7 @@ type (
 	}
 
 	SubmitBlockResp struct {
-		BlockHeader  BlockHeader `json:"block_jeader"`
+		BlockHeader  BlockHeader `json:"block_header"`
 		OrphanStatus bool        `json:"orphan_status"`
 		Depth        int         `json:"depth"`
 	}
