@@ -305,7 +305,7 @@ func serBlockTemplateHeader(v *bytecoin.BinBlockTemplate, rw rw, format Format, 
 	if kind == kindNormal {
 		rw.Varint(&v.MajorVersion)
 		rw.Varint(&v.MinorVersion)
-		if v.MajorVersion == 1 || (format == FormatElectroneum && v.MajorVersion == 7) {
+		if v.MajorVersion == 1 || (format == FormatElectroneum && v.MajorVersion >= 7) {
 			rw.VarintUint32(&v.Timestamp)
 			rw.Binary(v.PreviousBlockHash[:], 32)
 			if v.Nonce == nil {
@@ -322,7 +322,7 @@ func serBlockTemplateHeader(v *bytecoin.BinBlockTemplate, rw rw, format Format, 
 		// TODO - CM here
 		panic("Unknown block major version")
 	}
-	if v.MajorVersion == 1 || (format == FormatElectroneum && v.MajorVersion == 7) {
+	if v.MajorVersion == 1 || (format == FormatElectroneum && v.MajorVersion >= 7) {
 		rw.Varint(&v.MajorVersion)
 		rw.Varint(&v.MinorVersion)
 		rw.VarintUint32(&v.Timestamp)
