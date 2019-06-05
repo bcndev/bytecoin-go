@@ -183,11 +183,12 @@ type (
 	}
 
 	Transfer struct {
-		Address string   `json:"address"`
-		Amount  int64    `json:"amount"`
-		Ours    bool     `json:"ours,omitempty"`
-		Locked  bool     `json:"locked,omitempty"`
-		Outputs []Output `json:"outputs,omitempty"`
+		Address         string   `json:"address"`
+		Amount          int64    `json:"amount"`
+		Ours            bool     `json:"ours,omitempty"`
+		Locked          bool     `json:"locked,omitempty"`
+		Outputs         []Output `json:"outputs,omitempty"`
+		TransactionHash Hash     `json:"transaction_hash"`
 	}
 
 	Transaction struct {
