@@ -93,7 +93,7 @@ type (
 	BinTransactionInput struct { // Mix of bytecoin::InputCoinbase and bytecoin::InputKey
 		Type          string   `json:"type"` // "coinbase" - coinbase, "key" - key input
 		Height        int      `json:"height"`
-		Amount        uint64   `json:"amount"`
+		Amount        uint64   `json:"amount,omitempty"`
 		OutputIndexes []int    `json:"output_indexes,omitempty"`
 		KeyImage      KeyImage `json:"key_image"`
 	}
@@ -101,6 +101,7 @@ type (
 	BinTransactionOutput struct {
 		Amount               uint64     `json:"amount"`
 		PublicKey            PublicKey  `json:"public_key"`
+		AmountCommitment     PublicKey  `json:"amount_commitment,omitempty"`
 		EncryptedSecret      *PublicKey `json:"encrypted_secret,omitempty"`
 		EncryptedAddressType HexBlob    `json:"encrypted_address_type"` // actually single byte
 		Type                 string     `json:"type"`                   // "key" - key output
@@ -163,10 +164,12 @@ type (
 	}
 
 	Output struct {
-		Amount      uint64 `json:"amount"`
-		PK          string `json:"public_key"`
-		GlobalIndex int    `json:"global_index"`
-		StackIndex  int    `json:"stack_index"`
+		TxVersion        int       `json:"transaction_version"`
+		Amount           uint64    `json:"amount"`
+		PK               PublicKey `json:"public_key"`
+		AmountCommitment PublicKey `json:"amount_commitment,omitempty"`
+		GlobalIndex      int       `json:"global_index"`
+		StackIndex       int       `json:"stack_index,omitempty"`
 
 		// Added from transaction
 		UnlockTime uint64 `json:"unlock_block_or_timestamp"`
@@ -179,7 +182,6 @@ type (
 		KeyImage        KeyImage `json:"key_image"`
 		TransactionHash Hash     `json:"transaction_hash"`
 		Address         string   `json:"address"`
-		IsDust          bool     `json:"dust"`
 	}
 
 	Transfer struct {
@@ -187,6 +189,7 @@ type (
 		Amount          int64    `json:"amount"`
 		Ours            bool     `json:"ours,omitempty"`
 		Locked          bool     `json:"locked,omitempty"`
+		UnlockTime      uint64   `json:"unlock_block_or_timestamp,omitempty"`
 		Outputs         []Output `json:"outputs,omitempty"`
 		TransactionHash Hash     `json:"transaction_hash"`
 	}
