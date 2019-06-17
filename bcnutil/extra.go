@@ -28,7 +28,13 @@ const (
 	extraTagExtraNonce        = 2
 	extraTagMMTag             = 3
 	extraTagBlockCapacityVote = 4
+	extraTagEncryptedMessage  = 5
 )
+
+type ExtraMessage struct {
+	Output  bytecoin.BinTransactionOutput
+	Message bytecoin.HexBlob
+}
 
 type ExtraFields struct {
 	Padding           int
@@ -39,6 +45,7 @@ type ExtraFields struct {
 	MMRoot            *bytecoin.Hash
 	MMDepth           int
 	BlockCapacityVote *uint64
+	EncryptedMessages []ExtraMessage
 	SplitExtra        []bytecoin.HexBlob
 }
 
@@ -85,6 +92,8 @@ loop:
 			}
 
 			if size == 32+1 && data[0] == 0 {
+				leftovers = append(leftovers, leftovers[len(leftovers)-1])
+				leftovers[len(leftovers)-2] += 32
 				if fields.PaymentId == nil {
 					fields.PaymentId = &bytecoin.Hash{}
 					copy(fields.PaymentId[:], data[1:])
@@ -104,6 +113,8 @@ loop:
 			}
 
 			if size == 32+1 {
+				leftovers = append(leftovers, leftovers[len(leftovers)-1])
+				leftovers[len(leftovers)-2] += 32
 				if fields.MMRoot == nil {
 					fields.MMDepth = int(data[0])
 					fields.MMRoot = &bytecoin.Hash{}
@@ -119,11 +130,46 @@ loop:
 			if !ok {
 				break loop
 			}
+
 			r2 := bytes.NewReader(data)
 			cv, err := binary.ReadUvarint(r2)
 			if err == nil { // && r2.Len() == 0 - TODO add after C++ code is updated after hardfork
 				if fields.BlockCapacityVote == nil {
 					fields.BlockCapacityVote = &cv
+				}
+			}
+		case extraTagEncryptedMessage:
+			size, leftovers, ok = readExtraVarint(r, leftovers)
+			if !ok {
+				break loop
+			}
+			data, leftovers, ok = readExtraBlob(r, leftovers, size)
+			if !ok {
+				break loop
+			}
+
+			r2 := bytes.NewReader(data)
+			var msg ExtraMessage
+			var leftovers2 []int
+
+			msg.Output.EncryptedSecret = &bytecoin.PublicKey{}
+			_, errPubKey := r2.Read(msg.Output.PublicKey[:])
+			leftovers2 = append(leftovers2, r2.Len())
+			_, errSecret := r2.Read(msg.Output.EncryptedSecret[:])
+			leftovers2 = append(leftovers2, r2.Len())
+			type_, leftovers2, okType := readExtraBlob(r2, leftovers2, 1)
+			msg.Output.EncryptedAddressType = type_
+			textSize, leftovers2, okTextSize := readExtraVarint(r2, leftovers2)
+			text, leftovers2, okText := readExtraBlob(r2, leftovers2, textSize)
+			msg.Message = text
+
+			if errPubKey == nil && errSecret == nil && okType && okTextSize && okText {
+				fields.EncryptedMessages = append(fields.EncryptedMessages, msg)
+
+				leftovers = leftovers[:len(leftovers)-1]
+				last := leftovers[len(leftovers)-1]
+				for _, l := range leftovers2 {
+					leftovers = append(leftovers, l+last)
 				}
 			}
 		default:
