@@ -101,7 +101,7 @@ type (
 	BinTransactionOutput struct {
 		Amount               uint64     `json:"amount"`
 		PublicKey            PublicKey  `json:"public_key"`
-		AmountCommitment     PublicKey  `json:"amount_commitment,omitempty"`
+		AmountCommitment     *PublicKey `json:"amount_commitment,omitempty"`
 		EncryptedSecret      *PublicKey `json:"encrypted_secret,omitempty"`
 		EncryptedAddressType HexBlob    `json:"encrypted_address_type"` // actually single byte
 		Type                 string     `json:"type"`                   // "key" - key output
