@@ -166,8 +166,8 @@ loop:
 			if errPubKey == nil && errSecret == nil && okType && okTextSize && okText {
 				fields.EncryptedMessages = append(fields.EncryptedMessages, msg)
 
-				leftovers = leftovers[:len(leftovers)-1]
 				last := leftovers[len(leftovers)-1]
+				leftovers = leftovers[:len(leftovers)-1]
 				for _, l := range leftovers2 {
 					leftovers = append(leftovers, l+last)
 				}
